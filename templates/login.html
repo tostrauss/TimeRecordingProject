@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="/static/login-styles.css">
+  <style>
+    .loading-spinner {
+      display: none;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <div class="loading-spinner" id="loading-spinner"></div>
+    <form id="login-form">
+      <div class="input-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter your username" required autofocus>
+      </div>
+      <div class="input-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" placeholder="Enter your password" required>
+      </div>
+      <button type="submit" id="login-button">Login</button>
+    </form>
+    <p id="login-message"></p>
+  </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      document.getElementById('login-button').disabled = true;
+      document.getElementById('loading-spinner').style.display = 'inline-block';
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) {
+        document.getElementById('login-message').textContent = 'Please fill out both fields.';
+        document.getElementById('login-message').style.color = 'red';
+        document.getElementById('login-button').disabled = false;
+        document.getElementById('loading-spinner').style.display = 'none';
+        return;
+      }
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({ username, password }),
+        });
+
+        if (response.ok) {
+          const responseData = await response.json();
+          document.getElementById('login-message').textContent = 'Login successful!';
+          document.getElementById('login-message').style.color = 'green';
+          setTimeout(() => {
+            window.location.href = responseData.redirect;
+          }, 1000);
+        } else {
+          const errorData = await response.json();
+          document.getElementById('login-message').textContent = errorData.error || 'Login failed. Please try again.';
+          document.getElementById('login-message').style.color = 'red';
+        }
+      } catch (error) {
+        document.getElementById('login-message').textContent = 'An error occurred. Please try again.';
+        document.getElementById('login-message').style.color = 'red';
+      } finally {
+        document.getElementById('login-button').disabled = false;
+        document.getElementById('loading-spinner').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
+
+
