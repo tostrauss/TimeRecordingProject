@@ -173,6 +173,43 @@ def get_users():
     except Exception as e:
         logging.error(f"Error retrieving users: {e}")
         return jsonify({"error": "An error occurred while retrieving users"}), 500
+    
+    
+@app.route('/toggle_clock', methods=['POST'])
+def toggle_clock():
+    if 'user_id' not in session:
+        logging.warning("Unauthorized access attempt to toggle clock")
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        data = request.json
+        user_id = session['user_id']
+        current_status = data.get("current_status")  # 'clocked_in' or 'clocked_out'
+        current_time = data.get("current_time")  # Frontend provides current time
+        
+        with get_db_connection() as conn:
+            c = conn.cursor()
+            if current_status == 'clocked_in':
+                # Clock-out logic: Update the most recent incomplete record with clock-out time
+                c.execute("""
+                    UPDATE records
+                    SET hours_worked = (strftime('%s', ?) - strftime('%s', date)) / 3600.0
+                    WHERE user_id = ? AND hours_worked IS NULL
+                """, (current_time, user_id))
+                conn.commit()
+                return jsonify({"message": "Clock-out successful"}), 200
+            else:
+                # Clock-in logic: Add a new record with current time
+                c.execute("""
+                    INSERT INTO records (user_id, task_details, hours_worked, date)
+                    VALUES (?, ?, NULL, ?)
+                """, (user_id, "Clock-in session", current_time))
+                conn.commit()
+                return jsonify({"message": "Clock-in successful"}), 201
+    except Exception as e:
+        logging.error(f"Error toggling clock: {e}")
+        return jsonify({"error": "An error occurred while toggling clock"}), 500
+
 
     
 @app.route('/graph')

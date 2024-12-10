@@ -25,6 +25,10 @@
       margin-bottom: 15px;
     }
 
+    #toggle-clock-button {
+      margin: 20px 0;
+    }
+
     @media (max-width: 600px) {
       .container {
         padding: 15px;
@@ -38,8 +42,13 @@
 </head>
 <body>
   <div class="container">
-    <h2>Time Recording</h2>
-    <div class="loading-spinner" id="loading-record-spinner"></div>
+    <h1>Time Recording</h1>
+    <div class="loading-spinner" id="loading-spinner"></div>
+
+    <!-- New Clock-In/Clock-Out Button -->
+    <button id="toggle-clock-button" data-status="clocked_out">Clock In</button>
+    <p id="toggle-message" aria-live="polite"></p>
+
     <form id="record-form">
       <div class="input-group">
         <label for="task-details">Task Details</label>
@@ -59,10 +68,59 @@
   </div>
 
   <script>
-    document.getElementById('record-form').addEventListener('submit', async function(e) {
+    // Clock-In/Clock-Out Functionality
+    document.getElementById('toggle-clock-button').addEventListener('click', async function () {
+      const button = document.getElementById('toggle-clock-button');
+      const currentStatus = button.getAttribute('data-status'); // clocked_out or clocked_in
+      const currentTime = new Date().toISOString(); // Capture the current time
+      document.getElementById('loading-spinner').style.display = 'inline-block';
+
+      try {
+        // Send toggle request to the server
+        const response = await fetch('/toggle_clock', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            current_status: currentStatus,
+            current_time: currentTime,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          if (currentStatus === 'clocked_out') {
+            button.setAttribute('data-status', 'clocked_in');
+            button.textContent = 'Clock Out';
+            document.getElementById('toggle-message').textContent = 'Clock-in started!';
+            document.getElementById('toggle-message').style.color = 'green';
+          } else {
+            button.setAttribute('data-status', 'clocked_out');
+            button.textContent = 'Clock In';
+            document.getElementById('toggle-message').textContent = 'Clock-out stopped!';
+            document.getElementById('toggle-message').style.color = 'green';
+          }
+        } else {
+          document.getElementById('toggle-message').textContent = result.error || 'An error occurred.';
+          document.getElementById('toggle-message').style.color = 'red';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        document.getElementById('toggle-message').textContent = 'An error occurred. Please try again.';
+        document.getElementById('toggle-message').style.color = 'red';
+      } finally {
+        document.getElementById('loading-spinner').style.display = 'none';
+      }
+    });
+
+    // Existing Form Functionality
+    document.getElementById('record-form').addEventListener('submit', async function (e) {
       e.preventDefault();
       document.getElementById('record-button').disabled = true;
-      document.getElementById('loading-record-spinner').style.display = 'inline-block';
+      document.getElementById('loading-spinner').style.display = 'inline-block';
 
       const taskDetails = document.getElementById('task-details').value.trim();
       const hoursWorked = parseFloat(document.getElementById('hours-worked').value);
@@ -73,7 +131,7 @@
         document.getElementById('record-message').style.color = 'red';
         document.getElementById('record-message').focus();
         document.getElementById('record-button').disabled = false;
-        document.getElementById('loading-record-spinner').style.display = 'none';
+        document.getElementById('loading-spinner').style.display = 'none';
         return;
       }
 
@@ -108,17 +166,11 @@
         document.getElementById('record-message').style.color = 'red';
       } finally {
         document.getElementById('record-button').disabled = false;
-        document.getElementById('loading-record-spinner').style.display = 'none';
+        document.getElementById('loading-spinner').style.display = 'none';
       }
     });
   </script>
 </body>
 </html>
-
-
-
-
-
-
 
 
