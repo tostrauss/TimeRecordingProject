@@ -5,7 +5,7 @@
     <button (click)="toggleClock()" [disabled]="isLoading">{{ clockStatus }}</button>
     <p [ngClass]="messageColor">{{ clockMessage }}</p>
   
-    <form (ngSubmit)="onSubmit()" #recordForm="ngForm">
+    <form #recordForm="ngForm" (ngSubmit)="onSubmit(recordForm)">
       <div class="input-group">
         <label for="task-details">Task Details</label>
         <textarea
@@ -36,5 +36,4 @@
       <button type="submit" [disabled]="isLoading">Submit</button>
     </form>
     <p [ngClass]="messageColor">{{ recordMessage }}</p>
-  </div>
-  
+    

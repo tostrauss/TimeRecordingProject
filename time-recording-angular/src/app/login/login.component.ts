@@ -8,9 +8,9 @@ import { TimeRecordingService } from '../services/time-recording.service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  isLoading = false;
-  loginMessage = '';
-  messageColor = '';
+  isLoading = false; // To manage loading state
+  loginMessage = ''; // To display success or error messages
+  messageColor = ''; // To dynamically set message color
 
   constructor(private timeRecordingService: TimeRecordingService, private router: Router) {}
 
@@ -20,10 +20,10 @@ export class LoginComponent {
       this.messageColor = 'red';
       return;
     }
-  
+
     this.isLoading = true;
     const { username, password } = form.value;
-  
+
     this.timeRecordingService.login({ username, password }).subscribe(
       (response: any) => {
         this.loginMessage = 'Login successful!';
@@ -38,4 +38,5 @@ export class LoginComponent {
         this.isLoading = false;
       }
     );
-  }}  
+  }
+}

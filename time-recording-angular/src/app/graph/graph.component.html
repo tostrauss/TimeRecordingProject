@@ -1,11 +1,11 @@
 <h2>Work Hours Overview</h2>
 <label for="user-filter">Filter by User:</label>
-<select id="user-filter" (change)="filterGraph($event.target.value)">
+<select id="user-filter" (change)="filterGraph('user', $event)">
   <option value="">All Users</option>
   <option *ngFor="let user of users" [value]="user.id">{{ user.username }}</option>
 </select>
 
-<label for="date-filter">Filter by Date:</label>
-<input type="date" id="date-filter" (change)="filterGraph()">
+<input type="date" id="date-filter" (change)="filterGraph('date', $event)">
 <canvas id="hoursChart"></canvas>
 <p>{{ graphMessage }}</p>
+

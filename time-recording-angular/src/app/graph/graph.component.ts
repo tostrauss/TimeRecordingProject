@@ -9,7 +9,7 @@ import { TimeRecordingService } from '../services/time-recording.service';
 })
 export class GraphComponent implements OnInit {
   users: any[] = [];
-  graphMessage = '';
+  graphMessage: string = '';
   chart: any;
 
   constructor(private timeRecordingService: TimeRecordingService) {
@@ -21,55 +21,88 @@ export class GraphComponent implements OnInit {
     this.loadGraphData();
   }
 
-  // Add filterGraph method
-  filterGraph(userId?: string) {
-    const userFilter = userId || '';
-    const dateFilter = (document.getElementById('date-filter') as HTMLInputElement)?.value || '';
-    this.loadGraphData(dateFilter, userFilter);
-  }
-
-  // Load users from API
   loadUsers() {
     this.timeRecordingService.getUsers().subscribe(
-      (users: any) => (this.users = users),
-      (error) => console.error('Error loading users', error)
+      (users: any[]) => {
+        this.users = users;
+      },
+      (error) => {
+        console.error('Error loading users:', error);
+      }
     );
   }
 
-  // Load graph data
+  filterGraph(filterType: string, event: Event) {
+    const target = event.target as HTMLInputElement | HTMLSelectElement;
+    if (!target) return;
+  
+    if (filterType === 'user') {
+      const userId = target.value;
+      const dateFilter = (document.getElementById('date-filter') as HTMLInputElement)?.value || '';
+      this.loadGraphData(dateFilter, userId);
+    } else if (filterType === 'date') {
+      const dateFilter = target.value;
+      const userId = (document.getElementById('user-filter') as HTMLSelectElement)?.value || '';
+      this.loadGraphData(dateFilter, userId);
+    }
+  }
+  
+
   loadGraphData(filterDate: string = '', filterUser: string = '') {
     this.timeRecordingService.getRecords().subscribe(
       (records: any[]) => {
         const filteredRecords = records.filter((record: any) => {
-          return (!filterDate || record.date === filterDate) && (!filterUser || record.user_id === filterUser);
+          return (!filterDate || record.date === filterDate) && (!filterUser || record.user_id === parseInt(filterUser));
         });
 
-        const labels = filteredRecords.map((record: any) => record.date);
-        const data = filteredRecords.map((record: any) => record.hours_worked);
+        const labels = filteredRecords.map(record => record.date);
+        const data = filteredRecords.map(record => record.hours_worked);
 
-        if (this.chart) this.chart.destroy();
+        if (this.chart) {
+          this.chart.destroy();
+        }
+
         const ctx = document.getElementById('hoursChart') as HTMLCanvasElement;
         this.chart = new Chart(ctx, {
           type: 'line',
           data: {
-            labels,
+            labels: labels,
             datasets: [
               {
                 label: 'Hours Worked',
-                data,
+                data: data,
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                fill: true
-              }
-            ]
-          }
+                borderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: 'Hours Worked',
+                },
+              },
+              x: {
+                title: {
+                  display: true,
+                  text: 'Date',
+                },
+              },
+            },
+          },
         });
       },
       (error) => {
-        console.error('Error loading graph data', error);
-        this.graphMessage = 'Failed to load graph data';
+        console.error('Error loading records:', error);
+        this.graphMessage = 'An error occurred while loading records.';
       }
     );
   }
 }
+
 
