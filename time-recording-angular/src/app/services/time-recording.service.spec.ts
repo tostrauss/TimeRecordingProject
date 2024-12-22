@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { of, throwError} from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -8,9 +9,23 @@ import { Observable } from 'rxjs';
 export class TimeRecordingService {
   constructor(private http: HttpClient) {}
 
-  login(data: any): Observable<any> {
-    return this.http.post('/login', data, { withCredentials: true });
+  login(data: { username: string; password: string }): Observable<any> {
+    // Mock user credentials
+    const mockUsers = [
+      { username: 'tofu', password: 'xxx' }, // Example user
+    ];
+  
+    const user = mockUsers.find(
+      (u) => u.username === data.username && u.password === data.password
+    );
+  
+    if (user) {
+      return of({ message: 'Login successful', user });
+    } else {
+      return throwError(() => new Error('Invalid username or password'));
+    }
   }
+  
 
   addRecord(record: any): Observable<any> {
     return this.http.post('/add_record', record, { withCredentials: true });

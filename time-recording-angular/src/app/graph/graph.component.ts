@@ -1,108 +1,119 @@
 import { Component, OnInit } from '@angular/core';
-import { Chart, registerables } from 'chart.js';
 import { TimeRecordingService } from '../services/time-recording.service';
+import { Chart, registerables } from 'chart.js';
 
 @Component({
   selector: 'app-graph',
   templateUrl: './graph.component.html',
-  styleUrls: ['./graph.component.css']
+  styleUrls: ['./graph.component.css'],
 })
 export class GraphComponent implements OnInit {
-  users: any[] = [];
-  graphMessage: string = '';
-  chart: any;
+  users: { id: number; username: string }[] = [];
+  startDate: string = '';
+  endDate: string = '';
+  selectedUser: number | null = null;
+  graphMessage = '';
+  chart: Chart | null = null;
 
   constructor(private timeRecordingService: TimeRecordingService) {
     Chart.register(...registerables);
   }
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.initializeDates();
     this.loadUsers();
-    this.loadGraphData();
+    this.loadDefaultGraph();
   }
 
-  loadUsers() {
+  initializeDates(): void {
+    const today = new Date();
+    this.startDate = new Date(today.setDate(today.getDate() - 7)).toISOString().split('T')[0];
+    this.endDate = new Date().toISOString().split('T')[0];
+  }
+
+  loadUsers(): void {
     this.timeRecordingService.getUsers().subscribe(
-      (users: any[]) => {
+      (users) => {
         this.users = users;
+        console.log('Users loaded:', users);
       },
       (error) => {
         console.error('Error loading users:', error);
+        this.graphMessage = 'Failed to load user data. Please try again.';
       }
     );
   }
 
-  filterGraph(filterType: string, event: Event) {
-    const target = event.target as HTMLInputElement | HTMLSelectElement;
-    if (!target) return;
-  
-    if (filterType === 'user') {
-      const userId = target.value;
-      const dateFilter = (document.getElementById('date-filter') as HTMLInputElement)?.value || '';
-      this.loadGraphData(dateFilter, userId);
-    } else if (filterType === 'date') {
-      const dateFilter = target.value;
-      const userId = (document.getElementById('user-filter') as HTMLSelectElement)?.value || '';
-      this.loadGraphData(dateFilter, userId);
-    }
+  loadDefaultGraph(): void {
+    this.updateGraph();
   }
-  
 
-  loadGraphData(filterDate: string = '', filterUser: string = '') {
-    this.timeRecordingService.getRecords().subscribe(
-      (records: any[]) => {
-        const filteredRecords = records.filter((record: any) => {
-          return (!filterDate || record.date === filterDate) && (!filterUser || record.user_id === parseInt(filterUser));
-        });
+  updateGraph(): void {
+    // Log the filters being used
+    console.log('Fetching graph data for:', {
+      startDate: this.startDate,
+      endDate: this.endDate,
+      selectedUser: this.selectedUser,
+    });
 
-        const labels = filteredRecords.map(record => record.date);
-        const data = filteredRecords.map(record => record.hours_worked);
+    this.timeRecordingService
+      .getRecords(this.startDate, this.endDate, this.selectedUser || undefined)
+      .subscribe(
+        (records) => {
+          console.log('Records fetched:', records);
 
-        if (this.chart) {
-          this.chart.destroy();
-        }
+          if (records.length === 0) {
+            this.graphMessage = 'No data available for the selected filters.';
+            return;
+          }
 
-        const ctx = document.getElementById('hoursChart') as HTMLCanvasElement;
-        this.chart = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [
-              {
-                label: 'Hours Worked',
-                data: data,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderWidth: 2,
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true,
-                title: {
-                  display: true,
-                  text: 'Hours Worked',
+          const labels = records.map((record) => record.date);
+          const data = records.map((record) => record.hours_worked);
+
+          if (this.chart) {
+            this.chart.destroy();
+          }
+
+          const ctx = document.getElementById('hoursChart') as HTMLCanvasElement;
+          this.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [
+                {
+                  label: 'Hours Worked on Date',
+                  data: data,
+                  backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                  borderColor: 'rgba(54, 162, 235, 1)',
+                  borderWidth: 1,
                 },
-              },
-              x: {
-                title: {
-                  display: true,
-                  text: 'Date',
+              ],
+            },
+            options: {
+              responsive: true,
+              scales: {
+                y: {
+                  beginAtZero: true,
                 },
               },
             },
-          },
-        });
-      },
-      (error) => {
-        console.error('Error loading records:', error);
-        this.graphMessage = 'An error occurred while loading records.';
-      }
-    );
+          });
+
+          this.graphMessage = ''; // Clear any previous messages
+        },
+        (error) => {
+          console.error('Error fetching graph data:', error);
+          this.graphMessage = 'Failed to load graph data. Please try again.';
+        }
+      );
+  }
+
+  applyFilters(): void {
+    if (new Date(this.startDate) > new Date(this.endDate)) {
+      this.graphMessage = 'Start date must be before end date.';
+      console.error('Invalid date range:', this.startDate, this.endDate);
+      return;
+    }
+    this.updateGraph();
   }
 }
-
-

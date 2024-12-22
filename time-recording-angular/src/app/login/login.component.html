@@ -1,34 +1,13 @@
-<<div class="login-container">
-  <div class="login-box">
-    <h2>Login</h2>
-    <div *ngIf="isLoading" class="loading-spinner"></div>
-    <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
-      <div class="input-group">
-        <label for="username">Username:</label>
-        <input
-          type="text"
-          id="username"
-          name="username"
-          placeholder="Enter your username"
-          required
-          ngModel
-        />
-      </div>
-      <div class="input-group">
-        <label for="password">Password:</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          placeholder="Enter your password"
-          required
-          ngModel
-        />
-      </div>
-      <button type="submit" [disabled]="isLoading">Login</button>
-    </form>
+<div class="container">
+  <h1>Login</h1>
+  <form #loginForm="ngForm" (ngSubmit)="onSubmit(loginForm)">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required ngModel />
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required ngModel />
+    <button type="submit" [disabled]="isLoading">Login</button>
     <p [style.color]="messageColor">{{ loginMessage }}</p>
-  </div>
+  </form>
 </div>
 
   

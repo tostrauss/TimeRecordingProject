@@ -22,21 +22,19 @@ export class LoginComponent {
     }
 
     this.isLoading = true;
-    const { username, password } = form.value;
+    const {username, password} = form.value;
 
-    this.timeRecordingService.login({ username, password }).subscribe(
+    this.timeRecordingService.login({username, password}).subscribe(
       (response: any) => {
-        this.loginMessage = 'Login successful!';
+        this.loginMessage = response.message || 'Login successful!';
         this.messageColor = 'green';
         setTimeout(() => this.router.navigate(['/time-recording']), 1000);
       },
       (error: any) => {
-        this.loginMessage = error.error?.message || 'Login failed. Please try again.';
+        this.loginMessage = error.message || 'Invalid username or password.'
         this.messageColor = 'red';
-      },
-      () => {
         this.isLoading = false;
-      }
+      },
     );
   }
 }

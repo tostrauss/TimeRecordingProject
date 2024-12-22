@@ -1,62 +1,41 @@
 import { Component } from '@angular/core';
 import { TimeRecordingService } from '../services/time-recording.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-time-recording',
   templateUrl: './time-recording.component.html',
-  styleUrls: ['./time-recording.component.css']
+  styleUrls: ['./time-recording.component.css'],
 })
 export class TimeRecordingComponent {
-  isLoading = false;
-  clockStatus = 'Clock In'; // Toggle status between Clock In and Clock Out
-  clockMessage = ''; // To display clock-related messages
-  messageColor = ''; // Dynamically set the color of messages
-  recordMessage = ''; // To display record submission messages
+  message = '';
 
-  constructor(private timeRecordingService: TimeRecordingService) {}
+  constructor(
+    private timeRecordingService: TimeRecordingService,
+    private router: Router
+  ) {}
 
-  // Toggle Clock In/Clock Out functionality
-  toggleClock() {
-    this.isLoading = true;
-    this.timeRecordingService.toggleClock(this.clockStatus).subscribe(
-      (response: any) => {
-        this.clockStatus = this.clockStatus === 'Clock In' ? 'Clock Out' : 'Clock In';
-        this.clockMessage = response.message;
-        this.messageColor = 'green';
-      },
-      (error: any) => {
-        this.clockMessage = error.error?.message || 'An error occurred.';
-        this.messageColor = 'red';
-      },
-      () => {
-        this.isLoading = false;
-      }
-    );
-  }
-
-  // Handle form submission
-  onSubmit(form: any) {
+  addRecord(form: any): void {
     if (!form.valid) {
-      this.recordMessage = 'Please fill out all fields correctly.';
-      this.messageColor = 'red';
+      this.message = 'Please fill out all fields.';
       return;
     }
 
-    const { taskDetails, hoursWorked, date } = form.value; // Extract form values
-    this.isLoading = true;
-    this.timeRecordingService.addRecord({ taskDetails, hoursWorked, date }).subscribe(
-      (response: any) => {
-        this.recordMessage = 'Record added successfully!';
-        this.messageColor = 'green';
-        form.reset(); // Reset the form after successful submission
+    const record = form.value;
+    this.timeRecordingService.addRecord(record).subscribe(
+      (response) => {
+        this.message = response.message;
+        // Redirect to graph page after success
+        setTimeout(() => {
+          this.router.navigate(['/graph']);
+        }, 1000); // Wait 1 second to show the success message
       },
-      (error: any) => {
-        this.recordMessage = error.error?.message || 'Failed to add record. Try again.';
-        this.messageColor = 'red';
-      },
-      () => {
-        this.isLoading = false;
+      (error) => {
+        console.error('Error adding record:', error);
+        this.message = 'Failed to add record. Please try again.';
       }
     );
   }
 }
+
+

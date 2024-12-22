@@ -1,11 +1,40 @@
-<h2>Work Hours Overview</h2>
-<label for="user-filter">Filter by User:</label>
-<select id="user-filter" (change)="filterGraph('user', $event)">
-  <option value="">All Users</option>
-  <option *ngFor="let user of users" [value]="user.id">{{ user.username }}</option>
-</select>
+<div class="container">
+  <h1>Work Hours Overview</h1>
 
-<input type="date" id="date-filter" (change)="filterGraph('date', $event)">
-<canvas id="hoursChart"></canvas>
-<p>{{ graphMessage }}</p>
+  <div>
+    <label for="user-filter">Filter by User:</label>
+    <select
+      id="user-filter"
+      [(ngModel)]="selectedUser"
+      (change)="applyFilters()"
+    >
+      <option [value]="null">All Users</option>
+      <option *ngFor="let user of users" [value]="user.id">
+        {{ user.username }}
+      </option>
+    </select>
+  </div>
+
+  <div>
+    <label for="start-date">Start Date:</label>
+    <input
+      type="date"
+      id="start-date"
+      [(ngModel)]="startDate"
+      (change)="applyFilters()"
+    />
+
+    <label for="end-date">End Date:</label>
+    <input
+      type="date"
+      id="end-date"
+      [(ngModel)]="endDate"
+      (change)="applyFilters()"
+    />
+  </div>
+
+  <canvas id="hoursChart"></canvas>
+  <p *ngIf="graphMessage" style="color: red;">{{ graphMessage }}</p>
+</div>
+
 
