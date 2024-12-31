@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "my-library": "file:time-recording-angular/my-library-0.0.3.tgz"
+  }
+}
