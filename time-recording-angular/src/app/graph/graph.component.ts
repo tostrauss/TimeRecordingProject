@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { TimeRecordingService } from '../services/time-recording.service';
 import { Chart, registerables } from 'chart.js';
 
@@ -15,7 +15,7 @@ export class GraphComponent implements OnInit {
   graphMessage = '';
   chart: Chart | null = null;
 
-  constructor(private timeRecordingService: TimeRecordingService) {
+  constructor(@Inject(TimeRecordingService) private timeRecordingService: TimeRecordingService) {
     Chart.register(...registerables);
   }
 

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
+import { NgForm } from '@angular/forms';
 import { TimeRecordingService } from '../services/time-recording.service';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-time-recording',
@@ -8,34 +8,31 @@ import { Router } from '@angular/router';
   styleUrls: ['./time-recording.component.css'],
 })
 export class TimeRecordingComponent {
-  message = '';
+message: any;
+  constructor(private timeRecordingService: TimeRecordingService) {}
 
-  constructor(
-    private timeRecordingService: TimeRecordingService,
-    private router: Router
-  ) {}
+  addRecord(recordForm: NgForm): void {
+    if (recordForm.valid) {
+      const { taskDetails, hoursWorked, date } = recordForm.value;
 
-  addRecord(form: any): void {
-    if (!form.valid) {
-      this.message = 'Please fill out all fields.';
-      return;
+      const record = {
+        taskDetails,
+        hoursWorked,
+        date,
+      };
+
+      this.timeRecordingService.addRecord(record).subscribe(
+        () => {
+          console.log('Record added successfully');
+          recordForm.reset(); // Clear the form after submission
+        },
+        (error) => {
+          console.error('Error adding record:', error);
+        }
+      );
+    } else {
+      console.error('Form is invalid');
     }
-
-    const record = form.value;
-    this.timeRecordingService.addRecord(record).subscribe(
-      (response) => {
-        this.message = response.message;
-        // Redirect to graph page after success
-        setTimeout(() => {
-          this.router.navigate(['/graph']);
-        }, 1000); // Wait 1 second to show the success message
-      },
-      (error) => {
-        console.error('Error adding record:', error);
-        this.message = 'Failed to add record. Please try again.';
-      }
-    );
   }
 }
-
 
