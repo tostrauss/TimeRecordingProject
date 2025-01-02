@@ -1,1 +1,17 @@
-<router-outlet></router-outlet>
+<splash-page></splash-page>
+
+<div *ngIf="(loading$ | async) === false && RENDER; else loadingTemplate">
+    <hub-header [Show]="ShowHeaderFooter"></hub-header>
+    <error></error>
+    <div class="Set_View_Area">
+        <div class="ViewArea_">
+            <access-restrict></access-restrict>
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+    <hub-footer [Show]="ShowHeaderFooter"></hub-footer>
+</div>
+
+<ng-template #loadingTemplate>
+  <div>Loading...</div>
+</ng-template>
