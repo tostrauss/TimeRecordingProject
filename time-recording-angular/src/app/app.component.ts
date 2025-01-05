@@ -5,14 +5,15 @@ import { filter } from 'rxjs/operators';
 import { GlobalInitializer, AuthGuard } from 'my-library';
 
 // Globals
-import { MatchComponent } from './CORE/match/match.component';
-import { GuideComponent } from './Guide/guide.component';
-import { MessagesComponent } from './CORE/Messages/messages.component';
-import { WelcomeComponent } from './CORE/Welcome/welcome.component';
-import { ProfileComponent } from './CORE/profile/profile.component';
-import { VerifiedComponent } from './verified/verified.component';
+// import { MatchComponent } from './CORE/match/match.component';
+// import { GuideComponent } from './Guide/guide.component';
+// import { MessagesComponent } from './CORE/Messages/messages.component';
+// import { WelcomeComponent } from './CORE/Welcome/welcome.component';
+// import { ProfileComponent } from './CORE/profile/profile.component';
+// import { VerifiedComponent } from './verified/verified.component';
 import { checkmarkOutline, personOutline, settingsOutline } from 'ionicons/icons';
 import { addIcons } from 'ionicons';
+import * as path from 'path';
 
 @Component({
   selector: 'app-root',
@@ -53,9 +54,9 @@ export class AppComponent implements OnInit {
     /*
       ready for andrey TO FINISH
     */
-
-    const RoutingArray = [
-      { path: '', component: GuideComponent, RestrictAcess: true },
+    
+     const RoutingArray = []
+      /*{ path: '', component: GuideComponent, RestrictAcess: true },
       { path: 'guide', component: GuideComponent, RestrictAcess: true },
       { path: 'welcome', component: WelcomeComponent, RestrictAcess: true },
       { path: 'profile', component: ProfileComponent, RestrictAcess: true },
@@ -65,11 +66,11 @@ export class AppComponent implements OnInit {
       { path: 'match', component: MatchComponent, RestrictAcess: true},
       { path: 'messages', component: MessagesComponent,RestrictAcess: true},
       { path: 'messages/:id', component: MessagesComponent, RestrictAcess: true },
-    ];
+    ]; */
 
     // run into function PathsArray
     // GLOBAL INITIALIZER
-    this.globalSubscription = this.globalInitializer.initGlobals(GLOBALS_App,RoutingArray, 'https://dev.collegerecruit.us/CORE_FE/GATEWAY.php').subscribe((config: any) => {
+    this.globalSubscription = this.globalInitializer.initGlobals(GLOBALS_App,[], 'https://dev.collegerecruit.us/CORE_FE/GATEWAY.php').subscribe((config: any) => {
       this.globalConfig = config;
 
       // Set Header Footer Show
